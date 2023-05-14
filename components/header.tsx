@@ -81,9 +81,6 @@ export default function Header() {
               />
             </Link>
           </li>
-          <li className="mx-2">
-            <Link href="/me">Me</Link>
-          </li>
           {session?.user && (
             <li className="mx-2">
               <Link href="/budgets">Budgets</Link>
