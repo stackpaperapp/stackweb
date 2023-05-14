@@ -1,20 +1,24 @@
-import Link from "next/link"
-import { signIn, signOut, useSession } from "next-auth/react"
-import styles from "./header.module.css"
+import Link from "next/link";
+import Image from "next/image";
+
+import { signIn, signOut, useSession } from "next-auth/react";
+import styles from "./header.module.css";
+import { useTheme } from "next-themes";
 
 // The approach used in this component shows how to build a sign in and sign out
 // component that works on pages which support both client and server side
 // rendering, and avoids any flash incorrect content on initial page load.
 export default function Header() {
-  const { data: session, status } = useSession()
-  const loading = status === "loading"
+  const { data: session, status } = useSession();
+  const { resolvedTheme } = useTheme();
+  const loading = status === "loading";
 
   return (
     <header>
       <noscript>
         <style>{`.nojs-show { opacity: 1; top: 0; }`}</style>
       </noscript>
-      <div className={styles.signedInStatus}>
+      <div>
         <p
           className={`nojs-show ${
             !session && loading ? styles.loading : styles.loaded
@@ -29,8 +33,8 @@ export default function Header() {
                 href={`/api/auth/signin`}
                 className={styles.buttonPrimary}
                 onClick={(e) => {
-                  e.preventDefault()
-                  signIn()
+                  e.preventDefault();
+                  signIn();
                 }}
               >
                 Sign in
@@ -39,56 +43,54 @@ export default function Header() {
           )}
           {session?.user && (
             <>
-              {session.user.image && (
-                <span
-                  style={{ backgroundImage: `url('${session.user.image}')` }}
-                  className={styles.avatar}
-                />
-              )}
-              <span className={styles.signedInText}>
-                <small>Signed in as</small>
-                <br />
-                <strong>{session.user.email ?? session.user.name}</strong>
-              </span>
-              <a
-                href={`/api/auth/signout`}
-                className={styles.button}
-                onClick={(e) => {
-                  e.preventDefault()
-                  signOut()
-                }}
-              >
-                Sign out
-              </a>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center">
+                  <span
+                    style={{ backgroundImage: `url('${session.user.image}')` }}
+                    className={styles.avatar}
+                  />
+                  <span>
+                    <strong>{session.user.name ?? session.user.email}</strong>
+                  </span>
+                </div>
+                <div>
+                  <a
+                    href={`/api/auth/signout`}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      signOut();
+                    }}
+                  >
+                    Sign out
+                  </a>
+                </div>
+              </div>
             </>
           )}
         </p>
       </div>
       <nav>
-        <ul className={styles.navItems}>
-          <li className={styles.navItem}>
-            <Link href="/">Home</Link>
+        <ul className="flex items-center justify-center my-4">
+          <li className="mx-2">
+            <Link href="/">
+              <Image
+                src={`/logo-256-${resolvedTheme}.png`}
+                width={64}
+                height={64}
+                alt="Stack Paper"
+              />
+            </Link>
           </li>
-          <li className={styles.navItem}>
-            <Link href="/client">Client</Link>
-          </li>
-          <li className={styles.navItem}>
-            <Link href="/server">Server</Link>
-          </li>
-          <li className={styles.navItem}>
-            <Link href="/protected">Protected</Link>
-          </li>
-          <li className={styles.navItem}>
-            <Link href="/api-example">API</Link>
-          </li>
-          <li className={styles.navItem}>
-            <Link href="/admin">Admin</Link>
-          </li>
-          <li className={styles.navItem}>
+          <li className="mx-2">
             <Link href="/me">Me</Link>
           </li>
+          {session?.user && (
+            <li className="mx-2">
+              <Link href="/budgets">Budgets</Link>
+            </li>
+          )}
         </ul>
       </nav>
     </header>
-  )
+  );
 }
