@@ -19,7 +19,7 @@ export default function Header() {
         <style>{`.nojs-show { opacity: 1; top: 0; }`}</style>
       </noscript>
       <div>
-        <p
+        <div
           className={`nojs-show ${
             !session && loading ? styles.loading : styles.loaded
           }`}
@@ -67,11 +67,11 @@ export default function Header() {
               </div>
             </>
           )}
-        </p>
+        </div>
       </div>
       <nav>
-        <ul className="flex items-center justify-center my-4">
-          <li className="mx-2">
+        <ul className="flex items-center justify-between my-4">
+          <li>
             <Link href="/">
               <Image
                 src={`/logo-256-${resolvedTheme}.png`}
@@ -82,7 +82,7 @@ export default function Header() {
             </Link>
           </li>
           {session?.user && (
-            <li className="mx-2">
+            <li className="mr-4">
               <Link href="/budgets">Budgets</Link>
             </li>
           )}

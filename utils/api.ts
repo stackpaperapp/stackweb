@@ -1,8 +1,9 @@
 import jwt from "jsonwebtoken";
 import { getToken } from "next-auth/jwt";
 import type { NextApiRequest } from "next";
-
+import axios from "axios";
 const secret = process.env.NEXTAUTH_SECRET;
+const fetcher = (...args) => fetch(...args).then((res) => res.json());
 
 export const get = async (req: NextApiRequest, path: string) => {
   const baseURL =
@@ -17,22 +18,18 @@ export const get = async (req: NextApiRequest, path: string) => {
 
   const token = jwt.sign(decoded, secret);
 
-  const response = await fetch(`${baseURL}/${path}`, {
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-    },
-  });
-
-  if (response.status == 404) {
+  try {
+    const response = await axios.get(`${baseURL}/${path}`, {
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    return response.data;
+  } catch (error) {
+    console.log(error);
     return null;
   }
-
-  if (response.status !== 200) {
-    throw new Error(response.statusText);
-  }
-
-  return await response.json();
 };
 
 export const post = async (req: NextApiRequest, path: string) => {
@@ -47,19 +44,18 @@ export const post = async (req: NextApiRequest, path: string) => {
   }
 
   const token = jwt.sign(decoded, secret);
-
-  const response = await fetch(`${baseURL}/${path}`, {
+  const response = await axios.post(`${baseURL}/${path}`, req.body, {
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${token}`,
     },
-    method: "POST",
-    body: req.body,
   });
 
   if (response.status !== 200) {
     throw new Error(response.statusText);
   }
 
-  return await response.json();
+  return response.data;
 };
+
+export { fetcher };

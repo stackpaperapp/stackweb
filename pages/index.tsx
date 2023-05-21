@@ -1,93 +1,54 @@
-import { HTMLInputTypeAttribute, useEffect, useState } from "react";
+import useSWR from "swr";
+import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
+
+import Home from "../components/home";
 import Layout from "../components/layout";
+import Loading from "../components/loading";
+import SignupForm from "../components/signup-form";
 
-export default function IndexPage() {
-  const { data: session } = useSession();
-  const [user, setUser] = useState();
-  const [country, setCountry] = useState();
-  const [phone, setPhone] = useState();
+import { fetcher } from "../utils/api";
+import { User } from "../types/user";
+import LoggedOut from "../components/logged-out";
 
-  // Fetch content from protected route
-  useEffect(() => {
-    const fetchData = async () => {
-      const res = await fetch("/api/me");
+const IndexPage = () => {
+  const { data: session, status } = useSession();
+  const [loading, setLoading] = useState<boolean>(false);
 
-      const json = await res.json();
-      setUser(json);
-    };
-    fetchData();
-  }, [session]);
+  const { data, error, mutate } = useSWR("/api/me", fetcher);
 
-  const signup = async () => {
-    const res = await fetch("/api/signup", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ country, phone }),
-    });
+  if (status === "loading") return <Loading />;
 
-    const json = await res.json();
-    setUser(json);
-  };
-
-  console.log(user);
+  if (error) return <div>failed to load</div>;
 
   return (
     <Layout>
       <div>
         {session ? (
-          user == null ? (
+          data === null ? (
             <div>
-              <p className="text-2xl mb-4">
-                Welcome to StackPaper, {session?.user?.name}!
+              <p className="text-2xl mb-8 font-black">
+                Welcome {session?.user?.name}!
               </p>
-              <div className="form-control mb-2">
-                <label className="label">
-                  <span className="label-text">Country</span>
-                </label>
-                <select
-                  className="select select-bordered w-full max-w-xs"
-                  onSelect={(e) => setCountry(e.target.value)}
-                >
-                  <option>United States</option>
-                  <option>Canada</option>
-                  <option>Mexico</option>
-                </select>
-              </div>
-              <div className="form-control mb-4">
-                <label className="label">
-                  <span className="label-text">Phone</span>
-                </label>
-                <input
-                  type="text"
-                  placeholder="Phone"
-                  className="input input-bordered"
-                  onChange={(e) => setPhone(e.target.value)}
+              {loading ? (
+                <Loading />
+              ) : (
+                <SignupForm
+                  name={session?.user?.name || ""}
+                  setLoading={setLoading}
+                  setSuccess={mutate}
                 />
-              </div>
-              <p className="text-sm mb-2">
-                By clicking "Continue", you accept the terms.
-              </p>
-              <button className="btn" onClick={signup}>
-                Continue
-              </button>
+              )}
             </div>
           ) : (
-            <>
-              <p className="text-2xl mb-2">
-                Welcome back, {session?.user?.name}!
-              </p>
-            </>
+            <Home user={data} />
           )
         ) : (
-          <>
-            <p className="text-2xl mb-2">Welcome to StackPaper!</p>
-            <p className="text-2xl">Sign in to get started.</p>
-          </>
+          <LoggedOut />
         )}
       </div>
     </Layout>
   );
-}
+};
+
+export default IndexPage;

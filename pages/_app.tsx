@@ -1,6 +1,7 @@
 import { SessionProvider } from "next-auth/react";
 import "./styles.css";
 import { ThemeProvider } from "next-themes";
+import { SWRConfig } from "swr";
 
 import type { AppProps } from "next/app";
 import type { Session } from "next-auth";
@@ -14,7 +15,17 @@ export default function App({
   return (
     <SessionProvider session={session}>
       <ThemeProvider>
-        <Component {...pageProps} />
+        <SWRConfig
+          value={{
+            revalidateOnFocus: false,
+            refreshWhenHidden: false,
+            revalidateOnMount: true,
+            revalidateIfStale: false,
+            dedupingInterval: 10000000,
+          }}
+        >
+          <Component {...pageProps} />
+        </SWRConfig>
       </ThemeProvider>
     </SessionProvider>
   );

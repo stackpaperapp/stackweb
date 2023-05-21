@@ -1,4 +1,4 @@
-import { get } from "../../../utils/api";
+import { get } from "../../utils/api";
 
 import type { NextApiRequest, NextApiResponse } from "next";
 
